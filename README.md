@@ -16,6 +16,30 @@ The second simply forwards the queries to the former.
 - UDP Proxy uses native Python 3 threading.
 
 
+**Security concerns & Deployment strategy:**
+- Wrapping DNS queries and answers via the Transport Layer Security (TLS)
+  protocol is to increase privacy and security by preventing eavesdropping and
+  manipulation of DNS data via man-in-the-middle (MITM) attacks.
+- The service(s) need to be deployed in the same network as its clients (end-users
+  or any other services consuming it). It would make no sense if the clients were
+  geographically separated from the service(s), unless there's also a private
+  encrypted SSH / VPN tunnel between the clients and the location where the
+  service(s) is/are deployed.
+- The application itself is structured as a pair of loosely-coupled services
+  (and separately containerized), the services kept as granular and lightweight
+  as possible, improving modularity and ease of development/maintenance/testing.
+  These are all principles of Microservice architecture development techniques,
+  enabling continuous delivery and deployment.
+- Orchestration by Kubernetes is highly recommended for clouds (ex. AWS & GCP).
+  On AWS for instance, it would make sense to deploy as Kubernetes Services, per
+  cluster or VPC. It would also make sense to push the docker images to (or pull
+  from) the respective Registry (ex. Amazon ECR).
+- With per-pod dnsPolicy, it can be set to "ClusterFirst" for DNS queries to
+  go to kube-dns service. Then one can define the upstream servers to point to
+  the Kubernetes Service associated with the deployment of the above DNS service.
+  https://kubernetes.io/blog/2017/04/configuring-private-dns-zones-upstream-nameservers-kubernetes/
+
+
 **Motivations:**
 
 - Guarantees the integrity of name resolution service at the transport layer,
